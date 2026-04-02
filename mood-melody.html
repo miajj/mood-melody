@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今日心曲 · Today's Melody</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; font-family: Georgia, serif; color: #e8e0d0;
+  }
+  #app { width: 100%; max-width: 460px; }
+
+  .lang-bar { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 16px; }
+  .lang-btn {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px; padding: 5px 12px; cursor: pointer;
+    color: #6a6a7a; font-size: 12px; transition: all 0.2s;
+  }
+  .lang-btn.active {
+    background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: #e8e0d0;
+  }
+
+  .header { text-align: center; margin-bottom: 24px; }
+  .header .piano { font-size: 36px; margin-bottom: 8px; }
+  .header h1 { font-size: 22px; font-weight: normal; letter-spacing: 2px; color: #e8e0d0; }
+  .header .date { font-size: 12px; color: #5a5a6a; margin-top: 6px; }
+
+  .card {
+    background: rgba(255,255,255,0.05); border-radius: 16px;
+    padding: 18px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);
+  }
+  .card-dim { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+  .card-label { color: #6a6a7a; font-size: 11px; letter-spacing: 1px; margin-bottom: 10px; }
+
+  .pack-grid { display: flex; gap: 8px; }
+  .pack-btn {
+    flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 7px 8px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px; transition: all 0.2s;
+  }
+  .pack-btn.active { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.28); }
+  .pack-btn .pack-emoji { font-size: 20px; }
+  .pack-btn .pack-name { color: #6a6a7a; font-size: 10px; }
+  .pack-btn.active .pack-name { color: #c0b8d0; }
+
+  .mood-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  .mood-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 12px; padding: 10px 4px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 5px; transition: all 0.18s;
+  }
+  .mood-btn .mood-emoji { font-size: 22px; line-height: 1; }
+  .mood-btn .mood-name { color: #7a7a8a; font-size: 10px; text-align: center; }
+  .mood-btn.active .mood-name { color: #e8e0d0; }
+
+  .mood-question { color: #b0a090; font-size: 13px; margin-bottom: 14px; }
+
+  textarea {
+    width: 100%; min-height: 90px; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+    padding: 12px; color: #e0d8c8; font-size: 14px; font-family: Georgia, serif;
+    resize: vertical; outline: none; line-height: 1.6;
+  }
+  .journal-question { color: #b0a090; font-size: 13px; margin-bottom: 12px; }
+
+  .apikey-row { display: flex; gap: 8px; align-items: center; }
+  .apikey-input {
+    flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 8px 12px; color: #c0b8a8; font-size: 13px;
+    outline: none; font-family: monospace;
+  }
+  .toggle-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 8px 10px; cursor: pointer; color: #6a6a7a; font-size: 12px;
+  }
+  .apikey-hint { color: #444; font-size: 10px; margin-top: 6px; }
+
+  .generate-btn {
+    width: 100%; padding: 16px; border: none; border-radius: 14px;
+    color: #444; font-size: 15px; letter-spacing: 2px; cursor: not-allowed;
+    background: rgba(255,255,255,0.05); transition: all 0.3s; font-family: Georgia, serif;
+  }
+  .generate-btn.ready {
+    background: linear-gradient(135deg, #4a3f6b, #2d5a8e); color: #e8e0d0; cursor: pointer;
+  }
+
+  /* Result */
+  .title-card {
+    background: linear-gradient(135deg, rgba(74,63,107,0.4), rgba(45,90,142,0.4));
+    border-radius: 20px; padding: 26px 22px; margin-bottom: 12px;
+    border: 1px solid rgba(255,255,255,0.12); text-align: center;
+  }
+  .exclusive-label { font-size: 11px; color: #5a5a6a; letter-spacing: 2px; margin-bottom: 10px; }
+  .piece-title { font-size: 22px; font-weight: normal; letter-spacing: 3px; margin-bottom: 14px; color: #e8e0d0; }
+  .opening { color: #c0b0a0; font-size: 14px; line-height: 1.8; font-style: italic; }
+
+  .player-card {
+    background: rgba(255,255,255,0.05); border-radius: 16px; padding: 18px;
+    margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);
+    text-align: center; min-height: 90px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bars { display: flex; justify-content: center; align-items: flex-end; gap: 5px; height: 36px; margin-bottom: 12px; }
+  .bar {
+    width: 5px; border-radius: 3px; height: 100%;
+    background: linear-gradient(180deg, #7B6B9B, #2d5a8e);
+    animation: barBounce 1.2s ease-in-out infinite;
+  }
+  .bar:nth-child(2) { animation-delay: 0.15s; }
+  .bar:nth-child(3) { animation-delay: 0.30s; }
+  .bar:nth-child(4) { animation-delay: 0.45s; }
+  .bar:nth-child(5) { animation-delay: 0.60s; }
+  @keyframes barBounce {
+    0%, 100% { transform: scaleY(0.2); opacity: 0.4; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+  .gen-text { color: #8a8a9a; font-size: 13px; margin-bottom: 10px; }
+  .progress-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .progress-bar {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, #4a3f6b, #7B6B9B, #2d5a8e);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; } 100% { background-position: -200% 0; }
+  }
+  .playing-label { color: #8a8a9a; font-size: 11px; letter-spacing: 1px; margin-bottom: 10px; }
+  audio { width: 100%; border-radius: 8px; }
+  .error-box { color: #8B6A6A; font-size: 12px; }
+  .error-detail {
+    margin-top: 6px; padding: 8px; background: rgba(0,0,0,0.3);
+    border-radius: 6px; font-family: monospace; font-size: 10px;
+    color: #ffaaaa; word-break: break-all;
+  }
+
+  .music-label { color: #5a5a6a; font-size: 11px; letter-spacing: 2px; margin-bottom: 12px; }
+  .music-desc { color: #c8c0b0; font-size: 14px; line-height: 1.8; margin-bottom: 10px; }
+  .emotional-arc { color: #8888a0; font-size: 13px; font-style: italic; }
+
+  .tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tech-label { color: #444; font-size: 10px; letter-spacing: 1px; margin-bottom: 3px; }
+  .tech-value { color: #b0a890; font-size: 12px; }
+
+  .closing { color: #9a9080; font-size: 13px; line-height: 1.8; font-style: italic; text-align: center; }
+
+  .new-btn {
+    width: 100%; padding: 14px; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+    color: #6a6a7a; font-size: 13px; letter-spacing: 2px; cursor: pointer; font-family: Georgia, serif;
+  }
+
+  #input-view, #result-view { display: none; }
+  #input-view.visible, #result-view.visible { display: block; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Lang bar -->
+  <div class="lang-bar">
+    <button class="lang-btn active" data-lang="zh">🇨🇳 中文</button>
+    <button class="lang-btn" data-lang="en">🇺🇸 English</button>
+    <button class="lang-btn" data-lang="ja">🇯🇵 日本語</button>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="piano">🎹</div>
+    <h1 id="app-title">今日心曲</h1>
+    <div class="date" id="today-date"></div>
+  </div>
+
+  <!-- Input view -->
+  <div id="input-view" class="visible">
+    <!-- Emoji pack picker -->
+    <div class="card card-dim">
+      <div class="card-label" id="emoji-style-label">选择表情风格</div>
+      <div class="pack-grid">
+        <button class="pack-btn active" data-pack="classic"><span class="pack-emoji">😊</span><span class="pack-name">Classic</span></button>
+        <button class="pack-btn" data-pack="nature"><span class="pack-emoji">🌸</span><span class="pack-name">Nature</span></button>
+        <button class="pack-btn" data-pack="kawaii"><span class="pack-emoji">🐣</span><span class="pack-name">Kawaii</span></button>
+        <button class="pack-btn" data-pack="food"><span class="pack-emoji">🍓</span><span class="pack-name">Food</span></button>
+      </div>
+    </div>
+
+    <!-- Mood grid -->
+    <div class="card">
+      <div class="mood-question" id="mood-question">今天，你的心情更接近？</div>
+      <div class="mood-grid" id="mood-grid"></div>
+    </div>
+
+    <!-- Journal -->
+    <div class="card">
+      <div class="journal-question" id="journal-question">今天发生了什么？或者，你现在在想什么？</div>
+      <textarea id="journal-text" placeholder="随便写几句话就好，不需要完整，不需要有逻辑……"></textarea>
+    </div>
+
+    <!-- API Key -->
+    <div class="card card-dim">
+      <div class="card-label">🎵 <span id="apikey-label">API Key（仅存于本地）</span></div>
+      <div class="apikey-row">
+        <input type="password" id="apikey-input" class="apikey-input" placeholder="输入你的 Gemini API Key">
+        <button class="toggle-btn" id="toggle-key">👁️</button>
+      </div>
+      <div class="apikey-hint">aistudio.google.com/apikey · 不填也可以，只会生成文字描述</div>
+    </div>
+
+    <button class="generate-btn" id="generate-btn">为今天谱一首曲 🎵</button>
+  </div>
+
+  <!-- Result view -->
+  <div id="result-view">
+    <div class="title-card">
+      <div class="exclusive-label" id="exclusive-label">今日专属</div>
+      <div class="piece-title" id="piece-title"></div>
+      <div class="opening" id="opening"></div>
+    </div>
+
+    <div class="player-card" id="player-card" style="display:none">
+      <div id="player-generating" style="width:100%;display:none">
+        <div class="bars">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div>
+        </div>
+        <div class="gen-text" id="gen-text">正在生成音乐……</div>
+        <div class="progress-track"><div class="progress-bar"></div></div>
+      </div>
+      <div id="player-ready" style="width:100%;display:none">
+        <div class="playing-label" id="playing-label">♪ 正在播放</div>
+        <audio id="audio-player" controls></audio>
+      </div>
+      <div id="player-error" style="display:none">
+        <div class="error-box">
+          <div>⚠️ 音乐生成失败</div>
+          <div class="error-detail" id="error-detail"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="music-label" id="music-label">🎼 乐曲描述</div>
+      <div class="music-desc" id="music-desc"></div>
+      <div class="emotional-arc" id="emotional-arc"></div>
+    </div>
+
+    <div class="card card-dim tech-grid" id="tech-grid"></div>
+
+    <div class="card card-dim" style="text-align:center;margin-bottom:16px">
+      <div class="closing" id="closing-thought"></div>
+    </div>
+
+    <button class="new-btn" id="new-btn">记录明天</button>
+  </div>
+</div>
+
+<script>
+const LANGS = {
+  zh: {
+    appTitle: "今日心曲", moodQuestion: "今天，你的心情更接近？",
+    journalQuestion: "今天发生了什么？或者，你现在在想什么？",
+    journalPlaceholder: "随便写几句话就好，不需要完整，不需要有逻辑……",
+    generateBtn: "为今天谱一首曲 🎵", loadingBtn: "正在创作……",
+    exclusiveLabel: "今日专属", musicLabel: "🎼 乐曲描述",
+    styleLabel: "风格", tempoLabel: "速度", keyLabel: "调性", instrLabel: "编制",
+    newEntryBtn: "记录明天", emojiStyleLabel: "选择表情风格",
+    apikeyLabel: "API Key（仅存于本地）",
+    apikeyPlaceholder: "输入你的 Gemini API Key",
+    playingLabel: "♪ 正在播放", generatingMusic: "正在生成音乐……",
+    dateLocale: "zh-CN",
+    moodLabels: { sad:"低落", anxious:"焦虑", irritated:"烦躁", calm:"平静", okay:"还不错", happy:"开心", touched:"感动", energetic:"充满活力" },
+    fallback: { title:"今日心绪", opening:"你今天的感受，我都听见了。", musical_description:"一首安静的钢琴小品，像傍晚的光，不急不缓。", emotional_arc:"从复杂慢慢走向平静", closing_thought:"每一种感受都值得被好好对待。" },
+    aiPrompt: (mood, text) => `你是一位细腻的音乐治疗师和作曲家。用户今天的心情是"${mood}"，他们写道："${text}"\n\n请用JSON格式回复（只返回JSON，不要其他文字）：\n{"title":"曲子标题（4-8字，诗意）","opening":"一句温暖回应（不说教）","musical_description":"2-3句音乐描述","emotional_arc":"情绪走向（1句）","closing_thought":"一句送给用户的话（温柔）"}`,
+    musicPrompt: (mood, text) => `Instrumental solo piano piece. Mood: ${mood}. Emotional and cinematic, no vocals, no lyrics. Inspired by: "${text}". Smooth Pianos, gentle and introspective.`,
+  },
+  en: {
+    appTitle: "Today's Melody", moodQuestion: "How are you feeling today?",
+    journalQuestion: "What happened today? Or what's on your mind?",
+    journalPlaceholder: "Just a few words is fine…",
+    generateBtn: "Compose my melody 🎵", loadingBtn: "Creating…",
+    exclusiveLabel: "Your piece for today", musicLabel: "🎼 Musical Description",
+    styleLabel: "Style", tempoLabel: "Tempo", keyLabel: "Key", instrLabel: "Instruments",
+    newEntryBtn: "New entry", emojiStyleLabel: "Choose emoji style",
+    apikeyLabel: "API Key (stored locally only)",
+    apikeyPlaceholder: "Enter your Gemini API Key",
+    playingLabel: "♪ Now playing", generatingMusic: "Generating music…",
+    dateLocale: "en-US",
+    moodLabels: { sad:"Blue", anxious:"Anxious", irritated:"Irritated", calm:"Calm", okay:"Alright", happy:"Happy", touched:"Moved", energetic:"Energetic" },
+    fallback: { title:"Today's Mood", opening:"I hear everything you're feeling today.", musical_description:"A quiet piano piece, like evening light, soft and unhurried.", emotional_arc:"From complexity, slowly finding stillness", closing_thought:"Every feeling deserves to be gently held." },
+    aiPrompt: (mood, text) => `You are a sensitive music therapist and composer. The user's mood is "${mood}" and they wrote: "${text}"\n\nReply ONLY with JSON (no other text):\n{"title":"Piece title (4-6 words, poetic)","opening":"One warm sentence","musical_description":"2-3 sentences describing the piano piece","emotional_arc":"The emotional journey (1 sentence)","closing_thought":"One gentle thought for the user"}`,
+    musicPrompt: (mood, text) => `Instrumental solo piano piece. Mood: ${mood}. Emotional and cinematic, no vocals, no lyrics. Inspired by: "${text}". Smooth Pianos, gentle and introspective.`,
+  },
+  ja: {
+    appTitle: "今日のメロディ", moodQuestion: "今日の気持ちに近いのは？",
+    journalQuestion: "今日はどんなことがありましたか？",
+    journalPlaceholder: "何でも、少しだけ書いてみてください……",
+    generateBtn: "今日の曲を作る 🎵", loadingBtn: "作曲中……",
+    exclusiveLabel: "今日だけのあなたへ", musicLabel: "🎼 音楽の説明",
+    styleLabel: "スタイル", tempoLabel: "テンポ", keyLabel: "調性", instrLabel: "楽器",
+    newEntryBtn: "明日も記録する", emojiStyleLabel: "絵文字スタイルを選ぶ",
+    apikeyLabel: "API Key（ローカルのみ保存）",
+    apikeyPlaceholder: "Gemini API Key を入力",
+    playingLabel: "♪ 再生中", generatingMusic: "音楽を生成中……",
+    dateLocale: "ja-JP",
+    moodLabels: { sad:"落ち込み", anxious:"不安", irritated:"イライラ", calm:"穏やか", okay:"まあまあ", happy:"嬉しい", touched:"感動", energetic:"元気" },
+    fallback: { title:"今日の心", opening:"あなたの気持ち、届いています。", musical_description:"静かなピアノ小品、夕暮れの光のように。", emotional_arc:"複雑さから静けさへ", closing_thought:"どんな感情も大切にされる価値があります。" },
+    aiPrompt: (mood, text) => `あなたは繊細な音楽療法士です。ユーザーの気持ちは「${mood}」で：「${text}」\n\nJSON形式のみで返してください：\n{"title":"タイトル（4〜6文字）","opening":"温かい一言","musical_description":"2〜3文で説明","emotional_arc":"感情の流れ（1文）","closing_thought":"ユーザーへの一言"}`,
+    musicPrompt: (mood, text) => `Instrumental solo piano piece. Mood: ${mood}. Emotional and cinematic, no vocals, no lyrics. Inspired by: "${text}". Smooth Pianos, gentle and introspective.`,
+  },
+};
+
+const EMOJI_PACKS = {
+  classic: { moods: [{e:"😔",k:"sad"},{e:"😰",k:"anxious"},{e:"😤",k:"irritated"},{e:"😐",k:"calm"},{e:"🙂",k:"okay"},{e:"😊",k:"happy"},{e:"🥹",k:"touched"},{e:"⚡",k:"energetic"}] },
+  nature:  { moods: [{e:"🌧️",k:"sad"},{e:"🌀",k:"anxious"},{e:"🌋",k:"irritated"},{e:"🍃",k:"calm"},{e:"🌤️",k:"okay"},{e:"🌸",k:"happy"},{e:"🌙",k:"touched"},{e:"☀️",k:"energetic"}] },
+  kawaii:  { moods: [{e:"🐋",k:"sad"},{e:"🐙",k:"anxious"},{e:"🦔",k:"irritated"},{e:"🐢",k:"calm"},{e:"🐣",k:"okay"},{e:"🦋",k:"happy"},{e:"🐰",k:"touched"},{e:"🐆",k:"energetic"}] },
+  food:    { moods: [{e:"🫐",k:"sad"},{e:"🍋",k:"anxious"},{e:"🌶️",k:"irritated"},{e:"🍵",k:"calm"},{e:"🥐",k:"okay"},{e:"🍓",k:"happy"},{e:"🍮",k:"touched"},{e:"🍊",k:"energetic"}] },
+};
+
+const MOOD_COLORS = { sad:"#6B7B8D", anxious:"#8B7355", irritated:"#8B4A4A", calm:"#5B7B6F", okay:"#6B7B5B", happy:"#7B6B9B", touched:"#7B5B8B", energetic:"#8B7B3B" };
+const MUSIC_STYLES = {
+  sad:      {style:"Nocturne",  tempo:"♩=52",  key:"Eb minor", instruments:"Solo piano"},
+  anxious:  {style:"Étude",     tempo:"♩=88",  key:"C minor",  instruments:"Piano, arpeggios"},
+  irritated:{style:"Scherzo",   tempo:"♩=132", key:"D minor",  instruments:"Piano, strong chords"},
+  calm:     {style:"Prelude",   tempo:"♩=72",  key:"G major",  instruments:"Piano, clear tone"},
+  okay:     {style:"Waltz",     tempo:"♩=96",  key:"D major",  instruments:"Piano, light rhythm"},
+  happy:    {style:"Impromptu", tempo:"♩=116", key:"A major",  instruments:"Piano, playful"},
+  touched:  {style:"Romance",   tempo:"♩=60",  key:"Bb major", instruments:"Piano, gentle"},
+  energetic:{style:"Rondo",     tempo:"♩=144", key:"E major",  instruments:"Piano, full harmony"},
+};
+
+// State
+let currentLang = "zh";
+let currentPack = "classic";
+let selectedMood = null;
+
+// Init
+function init() {
+  document.getElementById("today-date").textContent =
+    new Date().toLocaleDateString(LANGS[currentLang].dateLocale, {year:"numeric",month:"long",day:"numeric",weekday:"long"});
+  renderMoodGrid();
+  updateLangUI();
+}
+
+function updateLangUI() {
+  const L = LANGS[currentLang];
+  document.getElementById("app-title").textContent = L.appTitle;
+  document.getElementById("today-date").textContent =
+    new Date().toLocaleDateString(L.dateLocale, {year:"numeric",month:"long",day:"numeric",weekday:"long"});
+  document.getElementById("emoji-style-label").textContent = L.emojiStyleLabel;
+  document.getElementById("mood-question").textContent = L.moodQuestion;
+  document.getElementById("journal-question").textContent = L.journalQuestion;
+  document.getElementById("journal-text").placeholder = L.journalPlaceholder;
+  document.getElementById("apikey-label").textContent = L.apikeyLabel;
+  document.getElementById("apikey-input").placeholder = L.apikeyPlaceholder;
+  document.getElementById("generate-btn").textContent = L.generateBtn;
+  document.getElementById("new-btn").textContent = L.newEntryBtn;
+  renderMoodGrid();
+}
+
+function renderMoodGrid() {
+  const L = LANGS[currentLang];
+  const grid = document.getElementById("mood-grid");
+  const moods = EMOJI_PACKS[currentPack].moods;
+  grid.innerHTML = moods.map(m => {
+    const color = MOOD_COLORS[m.k];
+    const isActive = selectedMood === m.k;
+    return `<button class="mood-btn ${isActive ? 'active' : ''}" data-mood="${m.k}"
+      style="${isActive ? `background:${color}55;border-color:${color}` : ''}">
+      <span class="mood-emoji">${m.e}</span>
+      <span class="mood-name">${L.moodLabels[m.k]}</span>
+    </button>`;
+  }).join("");
+  grid.querySelectorAll(".mood-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedMood = btn.dataset.mood;
+      renderMoodGrid();
+      updateGenerateBtn();
+    });
+  });
+}
+
+function updateGenerateBtn() {
+  const btn = document.getElementById("generate-btn");
+  const hasText = document.getElementById("journal-text").value.trim().length > 0;
+  const L = LANGS[currentLang];
+  if (selectedMood && hasText) {
+    btn.className = "generate-btn ready";
+    btn.textContent = L.generateBtn;
+  } else {
+    btn.className = "generate-btn";
+  }
+}
+
+// Lang buttons
+document.querySelectorAll(".lang-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentLang = btn.dataset.lang;
+    document.querySelectorAll(".lang-btn").forEach(b => b.classList.toggle("active", b.dataset.lang === currentLang));
+    updateLangUI();
+    updateGenerateBtn();
+  });
+});
+
+// Pack buttons
+document.querySelectorAll(".pack-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentPack = btn.dataset.pack;
+    document.querySelectorAll(".pack-btn").forEach(b => b.classList.toggle("active", b.dataset.pack === currentPack));
+    renderMoodGrid();
+  });
+});
+
+// Journal input
+document.getElementById("journal-text").addEventListener("input", updateGenerateBtn);
+
+// Toggle API key visibility
+let keyVisible = false;
+document.getElementById("toggle-key").addEventListener("click", () => {
+  keyVisible = !keyVisible;
+  document.getElementById("apikey-input").type = keyVisible ? "text" : "password";
+  document.getElementById("toggle-key").textContent = keyVisible ? "🙈" : "👁️";
+});
+
+// Generate
+document.getElementById("generate-btn").addEventListener("click", async () => {
+  if (!selectedMood || !document.getElementById("journal-text").value.trim()) return;
+  const L = LANGS[currentLang];
+  const moodLabel = L.moodLabels[selectedMood];
+  const journalText = document.getElementById("journal-text").value.trim();
+  const apiKey = document.getElementById("apikey-input").value.trim();
+
+  // Show loading
+  document.getElementById("generate-btn").textContent = L.loadingBtn;
+  document.getElementById("generate-btn").className = "generate-btn";
+
+  // 1. Generate text via Claude
+  let textResult = null;
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514", max_tokens: 800,
+        messages: [{ role: "user", content: L.aiPrompt(moodLabel, journalText) }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content.map(i => i.text || "").join("");
+    textResult = JSON.parse(text.replace(/```json|```/g, "").trim());
+  } catch(e) {
+    textResult = L.fallback;
+  }
+
+  // 2. Show result page
+  showResult(textResult, selectedMood, L);
+
+  // 3. Generate music if key provided
+  if (apiKey) {
+    showPlayerGenerating(L);
+    generateMusic(L.musicPrompt(moodLabel, journalText), apiKey, L);
+  }
+});
+
+function showResult(data, moodKey, L) {
+  document.getElementById("input-view").classList.remove("visible");
+  document.getElementById("result-view").classList.add("visible");
+
+  document.getElementById("exclusive-label").textContent = L.exclusiveLabel;
+  document.getElementById("piece-title").textContent = `《${data.title}》`;
+  document.getElementById("opening").textContent = data.opening;
+  document.getElementById("music-label").textContent = L.musicLabel;
+  document.getElementById("music-desc").textContent = data.musical_description;
+  document.getElementById("emotional-arc").textContent = data.emotional_arc;
+  document.getElementById("closing-thought").textContent = `✦ ${data.closing_thought}`;
+  document.getElementById("new-btn").textContent = L.newEntryBtn;
+
+  const ms = MUSIC_STYLES[moodKey];
+  document.getElementById("tech-grid").innerHTML = [
+    [L.styleLabel, ms.style],[L.tempoLabel, ms.tempo],[L.keyLabel, ms.key],[L.instrLabel, ms.instruments]
+  ].map(([l,v]) => `<div><div class="tech-label">${l}</div><div class="tech-value">${v}</div></div>`).join("");
+}
+
+function showPlayerGenerating(L) {
+  const pc = document.getElementById("player-card");
+  pc.style.display = "flex";
+  document.getElementById("player-generating").style.display = "block";
+  document.getElementById("player-ready").style.display = "none";
+  document.getElementById("player-error").style.display = "none";
+  document.getElementById("gen-text").textContent = L.generatingMusic;
+}
+
+async function generateMusic(prompt, key, L) {
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/lyria-3-clip-preview:generateContent?key=${key}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ["AUDIO", "TEXT"] }
+        })
+      }
+    );
+    const data = await res.json();
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    const audioPart = parts.find(p => p.inlineData?.mimeType?.startsWith("audio/"));
+
+    if (!audioPart) {
+      showPlayerError(JSON.stringify(data).slice(0, 300));
+      return;
+    }
+
+    // base64 → blob URL
+    const base64 = audioPart.inlineData.data;
+    const mime = audioPart.inlineData.mimeType || "audio/mpeg";
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mime });
+    const url = URL.createObjectURL(blob);
+
+    document.getElementById("player-generating").style.display = "none";
+    document.getElementById("player-ready").style.display = "block";
+    document.getElementById("playing-label").textContent = L.playingLabel;
+    const audio = document.getElementById("audio-player");
+    audio.src = url;
+    audio.play();
+  } catch(e) {
+    showPlayerError(e.message);
+  }
+}
+
+function showPlayerError(msg) {
+  document.getElementById("player-generating").style.display = "none";
+  document.getElementById("player-error").style.display = "block";
+  document.getElementById("error-detail").textContent = msg;
+}
+
+// New entry
+document.getElementById("new-btn").addEventListener("click", () => {
+  selectedMood = null;
+  document.getElementById("journal-text").value = "";
+  document.getElementById("player-card").style.display = "none";
+  document.getElementById("result-view").classList.remove("visible");
+  document.getElementById("input-view").classList.add("visible");
+  renderMoodGrid();
+  updateGenerateBtn();
+});
+
+init();
+</script>
+</body>
+</html>
