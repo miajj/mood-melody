@@ -12,11 +12,24 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { prompt, apiKey } = req.body;
+  const { mood, apiKey } = req.body;
 
-  if (!prompt || !apiKey) {
-    return res.status(400).json({ error: "Missing prompt or apiKey" });
+  if (!apiKey) {
+    return res.status(400).json({ error: "Missing apiKey" });
   }
+
+  const moodPrompts = {
+    sad:       "melancholic solo piano, slow tempo, minor key, gentle and tender, instrumental",
+    anxious:   "tense piano, moderate pace, minor key, searching and unsettled, instrumental",
+    irritated: "dynamic piano, strong accents, restless rhythm, instrumental",
+    calm:      "peaceful piano, slow flowing, major key, serene and quiet, instrumental",
+    okay:      "pleasant piano, moderate tempo, light and easy, major key, instrumental",
+    happy:     "joyful piano, upbeat, bright major key, cheerful, instrumental",
+    touched:   "warm tender piano, slow, deeply emotional, major key, instrumental",
+    energetic: "lively piano, fast tempo, vibrant and rhythmic, major key, instrumental",
+  };
+
+  const safePrompt = moodPrompts[mood] || "gentle solo piano, instrumental, peaceful";
 
   try {
     const response = await fetch(
@@ -25,7 +38,7 @@ export default async function handler(req, res) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
+          contents: [{ parts: [{ text: safePrompt }] }],
           generationConfig: { responseModalities: ["AUDIO", "TEXT"] },
         }),
       }

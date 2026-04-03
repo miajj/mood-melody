@@ -559,7 +559,7 @@ document.getElementById("generate-btn").addEventListener("click",async()=>{
     };
     const moodDesc = moodMusicMap[selectedMood] || moodLabel2;
     const musicPrompt = `Solo acoustic piano piece. ${moodDesc}. Purely instrumental, no vocals. Begins softly, develops expressively, ends with a gentle resolution. Warm and introspective.`;
-    generateMusicLyria(musicPrompt, apiKey, L);
+    generateMusicLyria(selectedMood, apiKey, L);
   }
 });
 
@@ -582,7 +582,7 @@ function showResult(data,moodKey,moodEmoji,L){
 }
 
 // ── TONE.JS PIANO ──
-async function generateMusicLyria(prompt, key, L) {
+async function generateMusicLyria(mood, key, L) {
   const player = document.getElementById("music-player");
   player.style.display = "block";
   document.getElementById("player-generating").style.display = "block";
@@ -595,7 +595,7 @@ async function generateMusicLyria(prompt, key, L) {
     const res = await fetch("/api/music", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, apiKey: key })
+      body: JSON.stringify({ mood, apiKey: key })
     });
     const data = await res.json();
 
