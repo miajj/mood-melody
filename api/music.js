@@ -19,17 +19,17 @@ export default async function handler(req, res) {
   }
 
   const moodPrompts = {
-    sad:       "melancholic solo piano, slow tempo, minor key, gentle and tender, instrumental",
-    anxious:   "tense piano, moderate pace, minor key, searching and unsettled, instrumental",
-    irritated: "dynamic piano, strong accents, restless rhythm, instrumental",
-    calm:      "peaceful piano, slow flowing, major key, serene and quiet, instrumental",
-    okay:      "pleasant piano, moderate tempo, light and easy, major key, instrumental",
-    happy:     "joyful piano, upbeat, bright major key, cheerful, instrumental",
-    touched:   "warm tender piano, slow, deeply emotional, major key, instrumental",
-    energetic: "lively piano, fast tempo, vibrant and rhythmic, major key, instrumental",
+    sad:       "solo piano, melancholic, slow tempo, minor key. Opens with a soft tender melody, gently builds with quiet emotion, fades to a peaceful resolution.",
+    anxious:   "solo piano, tense and searching, moderate pace, minor key. Begins hesitantly, grows more unsettled, then gradually finds calm and resolves softly.",
+    irritated: "solo piano, restless and dynamic, strong accents. Opens with sharp tension, builds to an expressive peak, then eases to a quiet close.",
+    calm:      "solo piano, peaceful and serene, slow flowing, major key. Opens gently, unfolds with quiet warmth, fades to a still and soft ending.",
+    okay:      "solo piano, pleasant and light, moderate tempo, major key. Begins simply, develops with easy warmth, closes with a gentle satisfying cadence.",
+    happy:     "solo piano, joyful and bright, upbeat, major key. Opens with a cheerful melody, builds with playful energy, ends with a warm uplifting resolution.",
+    touched:   "solo piano, deeply tender and warm, slow, major key. Begins softly, swells with heartfelt emotion, fades to a gentle and intimate close.",
+    energetic: "solo piano, vibrant and lively, fast tempo, major key. Opens with rhythmic energy, builds to an expressive peak, ends with a bright satisfying finish.",
   };
 
-  const safePrompt = moodPrompts[mood] || "gentle solo piano, instrumental, peaceful";
+  const safePrompt = moodPrompts[mood] || "solo piano, gentle and warm. Opens softly, builds with quiet emotion, fades to a peaceful resolution.";
 
   try {
     const response = await fetch(
