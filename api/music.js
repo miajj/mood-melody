@@ -41,7 +41,9 @@ export default async function handler(req, res) {
     const audioPart = parts.find((p) => p.inlineData?.mimeType?.startsWith("audio/"));
 
     if (!audioPart) {
-      return res.status(500).json({ error: "No audio in response", raw: JSON.stringify(data).slice(0, 300) });
+      const raw = JSON.stringify(data).slice(0, 500);
+      console.error("No audio part found:", raw);
+      return res.status(500).json({ error: "No audio in response: " + raw });
     }
 
     return res.status(200).json({
