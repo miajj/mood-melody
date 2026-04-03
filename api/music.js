@@ -19,17 +19,17 @@ export default async function handler(req, res) {
   }
 
   const moodPrompts = {
-    sad:       "solo piano, melancholic, slow tempo, minor key. Opens with a soft tender melody, gently builds with quiet emotion, fades to a peaceful resolution.",
-    anxious:   "solo piano, tense and searching, moderate pace, minor key. Begins hesitantly, grows more unsettled, then gradually finds calm and resolves softly.",
-    irritated: "solo piano, restless and dynamic, strong accents. Opens with sharp tension, builds to an expressive peak, then eases to a quiet close.",
-    calm:      "solo piano, peaceful and serene, slow flowing, major key. Opens gently, unfolds with quiet warmth, fades to a still and soft ending.",
-    okay:      "solo piano, pleasant and light, moderate tempo, major key. Begins simply, develops with easy warmth, closes with a gentle satisfying cadence.",
-    happy:     "solo piano, joyful and bright, upbeat, major key. Opens with a cheerful melody, builds with playful energy, ends with a warm uplifting resolution.",
-    touched:   "solo piano, deeply tender and warm, slow, major key. Begins softly, swells with heartfelt emotion, fades to a gentle and intimate close.",
-    energetic: "solo piano, vibrant and lively, fast tempo, major key. Opens with rhythmic energy, builds to an expressive peak, ends with a bright satisfying finish.",
+    sad:       "an original contemporary piano composition, introspective and subdued, slow rubato, sparse voicing. Fades in with a single melodic line, expands into fuller texture, dissolves into silence.",
+    anxious:   "an original contemporary piano piece, irregular rhythms, unresolved harmonies, moderate pace. Emerges tentatively, grows in complexity, settles into stillness.",
+    irritated: "an original contemporary piano work, percussive attack, dissonant clusters, driven rhythm. Erupts with intensity, reaches a climax, subsides to quiet.",
+    calm:      "an original contemporary piano composition, open voicing, consonant harmonies, unhurried pace. Emerges from silence, breathes and expands, returns to stillness.",
+    okay:      "an original contemporary piano piece, balanced phrasing, moderate tempo, neutral affect. Begins plainly, develops with simple ornamentation, closes cleanly.",
+    happy:     "an original contemporary piano composition, bright upper register, syncopated rhythm, brisk tempo. Sparks to life, dances forward, lands with finality.",
+    touched:   "an original contemporary piano work, lyrical phrasing, warm middle register, slow and expressive. Emerges softly, swells with feeling, fades to a whisper.",
+    energetic: "an original contemporary piano piece, driving rhythm, full voicing, fast tempo. Launches boldly, builds momentum, arrives at a decisive close.",
   };
 
-  const safePrompt = moodPrompts[mood] || "solo piano, gentle and warm. Opens softly, builds with quiet emotion, fades to a peaceful resolution.";
+  const safePrompt = moodPrompts[mood] || "an original contemporary piano composition, expressive and atmospheric. Fades in softly, develops organically, resolves to silence.";
 
   try {
     const response = await fetch(
