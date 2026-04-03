@@ -547,8 +547,18 @@ document.getElementById("generate-btn").addEventListener("click",async()=>{
   const apiKey = document.getElementById("apikey-input").value.trim();
   if (apiKey) {
     const moodLabel2 = LANGS[currentLang].moodLabels[selectedMood];
-    const journalVal = document.getElementById("journal-text").value.trim();
-    const musicPrompt = `Solo acoustic piano, ${moodLabel2} mood, instrumental only, no vocals. Opens softly, gradually becomes more expressive, then fades to a gentle close. Warm and introspective. Inspired by this feeling: ${journalVal}`;
+    const moodMusicMap = {
+      sad: "melancholic, slow, minor key, gentle and tender",
+      anxious: "tense, unsettled, searching, moderately paced",
+      irritated: "restless, sharp accents, dynamic contrasts",
+      calm: "peaceful, flowing, unhurried, major key",
+      okay: "light, easy, pleasant, moderate tempo",
+      happy: "bright, joyful, uplifting, major key",
+      touched: "warm, tender, deeply emotional, slow",
+      energetic: "vibrant, lively, rhythmic, fast tempo"
+    };
+    const moodDesc = moodMusicMap[selectedMood] || moodLabel2;
+    const musicPrompt = `Solo acoustic piano piece. ${moodDesc}. Purely instrumental, no vocals. Begins softly, develops expressively, ends with a gentle resolution. Warm and introspective.`;
     generateMusicLyria(musicPrompt, apiKey, L);
   }
 });
