@@ -547,7 +547,7 @@ document.getElementById("generate-btn").addEventListener("click",async()=>{
   const apiKey = document.getElementById("apikey-input").value.trim();
   if (apiKey) {
     const moodLabel2 = LANGS[currentLang].moodLabels[selectedMood];
-    const musicPrompt = `Instrumental piano piece only. Mood: ${moodLabel2}. No vocals, no singing, no lyrics, no voice, purely instrumental. Emotional and cinematic. Inspired by: "${document.getElementById("journal-text").value.trim()}". Smooth piano, gentle and introspective, acoustic.`;
+    const musicPrompt = `A complete solo piano piece with a clear beginning, development, and ending. Mood: ${moodLabel2}. Starts gently with a soft intro, builds emotionally in the middle, then resolves peacefully with a quiet outro and final cadence. No vocals, no singing, no lyrics, purely instrumental. Inspired by: "${document.getElementById("journal-text").value.trim()}". Acoustic piano, warm and introspective. [Intro] soft opening [Development] emotional build [Outro] gentle resolution and ending`;
     generateMusicLyria(musicPrompt, apiKey, L);
   }
 });
